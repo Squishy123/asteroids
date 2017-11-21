@@ -86,11 +86,11 @@ class World {
   }
 
   updateGameArea() {
-    let context = this.canvas.getContext("2d");
-    this.background(context);
+    let ctx = this.canvas.getContext("2d");
+    this.background(ctx);
     this.actors.forEach(function(actor) {
       actor.act();
-      actor.shape(context);
+      actor.shape(ctx);
     });
   }
 
@@ -126,13 +126,16 @@ class Bullet extends Actor {
     console.log("Added Bullet")
     this.shape = function(ctx) {
       ctx.fillStyle = "blue";
+      ctx.save();
       //ctx.rotate(angle);
       ctx.fillRect(this.x, this.y, 5, 5);
+      ctx.restore();
     }
 
   }
 
   act() {
+    if (this.x > this.world.canvas.width || this.x < 0 || this.y > this.world.canvas.height || this.y < 0) this.world.removeObject(this);
     this.setLocation(this.x + (10 * Math.cos(this.angle)), this.y - (10 * Math.sin(this.angle)));
   }
 }
@@ -142,6 +145,7 @@ class Player extends Actor {
     super();
     this.width = 25;
     this.height = 25;
+    this.angle = 0;
 
     this.MAX_VX = 5;
     this.MAX_VY = 5;
@@ -153,7 +157,30 @@ class Player extends Actor {
     this.color = "red";
     this.shape = function(ctx) {
       ctx.fillStyle = this.color;
-      ctx.fillRect(this.x, this.y, this.width, this.height);
+      /**
+      ctx.save();
+      ctx.beginPath();
+      ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+      ctx.rotate(this.angle * Math.PI / 180);
+      ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+      ctx.restore();
+      **/
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.angle * Math.PI / 180);
+      ctx.strokeStyle = '#ffffff';
+      ctx.fillStyle = '#000000';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, -15);
+      ctx.lineTo(10, 10);
+      ctx.lineTo(5, 7);
+      ctx.lineTo(-5, 7);
+      ctx.lineTo(-10, 10);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
     }
     this.keys = [];
 
@@ -170,27 +197,13 @@ class Player extends Actor {
 
   act() {
     if (this.keys[65]) {
-      if (Math.abs(this.vx) > this.MAX_VX) {
-        this.vx = -1 * this.MAX_VX + this.a;
-      } else
-        this.vx -= this.a;
+      this.angle -= 10;
     } else if (this.keys[68]) {
-      if (Math.abs(this.vx) > this.MAX_VX)
-        this.vx = this.MAX_VX - this.a;
-      else
-        this.vx += this.a
+      this.angle += 10;
     }
-    if (this.keys[87]) {
-      if (Math.abs(this.vy) > this.MAX_VY)
-        this.vy = -1 * this.MAX_VY + this.a;
-      else
-        this.vy -= this.a;
-    } else if (this.keys[83]) {
-      if (Math.abs(this.vy) > this.MAX_VY)
-        this.vy = this.MAX_VY - this.a;
-      else
-        this.vy += this.a;
-    }
+
+    //this.vx = 5 * Math.cos(this.angle * Math.PI / 180);
+    //this.vy = 5 * Math.sin(this.angle * Math.PI / 180);
 
     this.setLocation(this.x + this.vx, this.y + this.vy);
 
