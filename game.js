@@ -2,13 +2,13 @@ class Particle extends Actor {
   constructor(angle) {
     super();
     this.angle = angle;
-    this.vx = 0.25 * Math.sin(this.angle * Math.PI / 180);
-    this.vy = 0.25 * Math.cos(this.angle * Math.PI / 180);
+    this.vx = -5 * Math.sin(this.angle * Math.PI / 180);
+    this.vy = 5 * Math.cos(this.angle * Math.PI / 180);
     this.width = 5;
     this.height = 5;
     this.lifetime = new Timer();
     this.shape = function(ctx) {
-      ctx.fillStyle = "yellow";
+      ctx.fillStyle = "#ffffff";
       ctx.fillRect(this.x, this.y, this.width, this.height);
     }
 
@@ -16,6 +16,28 @@ class Particle extends Actor {
 
   act() {
     if (this.lifetime.millisecondsElapsed() > 1000) this.world.removeObject(this);
+    this.setLocation(this.x + this.vx, this.y + this.vy);
+  }
+}
+
+class Bullet extends Actor {
+  constructor(angle) {
+    super();
+    this.angle = angle;
+    this.vx = 10 * Math.sin(this.angle * Math.PI / 180);
+    this.vy = -10 * Math.cos(this.angle * Math.PI / 180);
+    this.width = 5;
+    this.height = 5;
+    this.lifetime = new Timer();
+    this.shape = function(ctx) {
+      ctx.fillStyle = "white";
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
+
+  }
+
+  act() {
+    if (this.lifetime.millisecondsElapsed() > 5000) this.world.removeObject(this);
     this.setLocation(this.x + this.vx, this.y + this.vy);
   }
 }
@@ -39,7 +61,7 @@ class Asteroid extends Actor {
     if (this.world) {
       let l = this.world.actors.length;
       for (let i = 0; i < l; i++) {
-        if (this.world.checkCollision(this, this.world.actors[i]) && this.world.actors[i] instanceof Particle) {
+        if (this.world.checkCollision(this, this.world.actors[i]) && this.world.actors[i] instanceof Bullet) {
           this.world.removeObject(this);
           return;
         }
@@ -143,7 +165,8 @@ class Player extends Actor {
       if (this.y > this.world.canvas.height)
         this.setLocation(this.x, 0);
 
-      //  if (this.keys[13])
+      //if (this.keys[32])
+        // /this.world.addObject(new Bullet(this.angle), this.x, this.y);
       //this.world.addObject(new Bullet(90 * Math.PI / 180), this.x, this.y);
     }
   }
