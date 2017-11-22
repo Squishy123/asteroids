@@ -45,6 +45,7 @@ class Bullet extends Actor {
 class Asteroid extends Actor {
   constructor(size) {
     super();
+    this.size = size;
     this.width = size;
     this.height = size;
     this.angle = Math.random() * 100;
@@ -62,6 +63,10 @@ class Asteroid extends Actor {
       let l = this.world.actors.length;
       for (let i = 0; i < l; i++) {
         if (this.world.checkCollision(this, this.world.actors[i]) && this.world.actors[i] instanceof Particle) {
+          if (this.size > 10) {
+            this.world.addObject(new Asteroid(this.size / 2), this.x, this.y);
+            this.world.addObject(new Asteroid(this.size / 2), this.x, this.y);
+          }
           this.world.removeObject(this);
           return;
         }
@@ -166,7 +171,7 @@ class Player extends Actor {
         this.setLocation(this.x, 0);
 
       //if (this.keys[32])
-        // /this.world.addObject(new Bullet(this.angle), this.x, this.y);
+      // /this.world.addObject(new Bullet(this.angle), this.x, this.y);
       //this.world.addObject(new Bullet(90 * Math.PI / 180), this.x, this.y);
     }
   }
