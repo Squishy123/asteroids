@@ -1,142 +1,52 @@
-/**
- * Counts the amount of seconds between a starting event
- * and an ending event
- *
- * @author Christian Wang
- * @version 1.0
- */
-class Timer {
-  /**
-   * Default constructor for timer object
-   * Starts the timer
-   */
-  constructor() {
-    this.mark();
-  }
-
-  /**
-   * Starts the timer and sets the starttime value to current time
-   */
-  mark() {
-    this.startTime = Date.now();
-  }
-
-  /**
-   * Returns the amount of seconds that passed
-   * Since the starting event
-   */
-  secondsElapsed() {
-    return (Date.now() - this.startTime) / 1000;
-  }
-
-  /**
-   * Returns the amount of millisecondss that passed
-   * Since the starting event
-   */
-  millisecondsElapsed() {
-    return Date.now() - this.startTime;
-  }
-}
-
-class Actor {
-  constructor() {
-    this.width = 0;
-    this.height = 0;
-    this.x = 0;
-    this.y = 0;
-
-    this.shape = null;
-  }
-
-  setLocation(x, y) {
-    this.x = x;
-    this.y = y;
-  }
-
-  setShape(shape) {
-    this.shape = shape;
-  }
-
-  act() {
-
-  }
-}
-
-class World {
-  constructor(canvas) {
-    this.canvas = canvas;
-    this.running = false;
-    this.actors = [];
-    this.background = null;
-
-    this.timer = new Timer();
-  }
-
-  setBackground(background) {
-    this.background = background;
-  }
-
-  start() {
-    this.running = true;
-    this.act();
-  }
-
-  stop() {
-    this.running = false;
-  }
-
-  updateGameArea() {
-    let ctx = this.canvas.getContext("2d");
-    this.background(ctx);
-    this.actors.forEach(function(actor) {
-      actor.act();
-      actor.shape(ctx);
-    });
-  }
-
-  act() {
-    if (!this.running) return;
-    window.requestAnimationFrame(this.act.bind(this));
-    if (this.timer.millisecondsElapsed() > 17) {
-      this.timer.mark();
-      this.updateGameArea();
-      this.act();
-    }
-  }
-
-  addObject(actor, x, y) {
-    this.actors.push(actor);
-    actor.world = this;
-    actor.setLocation(x, y);
-  }
-
-  removeObject(actor) {
-    actor.world = null;
-    actors.filter(function(a) {
-      return a != actor;
-    });
-  }
-}
-
-class Bullet extends Actor {
+class Particle extends Actor {
   constructor(angle) {
     super();
     this.angle = angle;
-
-    console.log("Added Bullet")
+    this.vx = 0.25 * Math.sin(this.angle * Math.PI / 180);
+    this.vy = 0.25 * Math.cos(this.angle * Math.PI / 180);
+    this.width = 5;
+    this.height = 5;
+    this.lifetime = new Timer();
     this.shape = function(ctx) {
-      ctx.fillStyle = "blue";
-      ctx.save();
-      //ctx.rotate(angle);
-      ctx.fillRect(this.x, this.y, 5, 5);
-      ctx.restore();
+      ctx.fillStyle = "yellow";
+      ctx.fillRect(this.x, this.y, this.width, this.height);
     }
 
   }
 
   act() {
-    if (this.x > this.world.canvas.width || this.x < 0 || this.y > this.world.canvas.height || this.y < 0) this.world.removeObject(this);
-    this.setLocation(this.x + (10 * Math.cos(this.angle)), this.y - (10 * Math.sin(this.angle)));
+    if (this.lifetime.millisecondsElapsed() > 1000) this.world.removeObject(this);
+    this.setLocation(this.x + this.vx, this.y + this.vy);
+  }
+}
+
+class Asteroid extends Actor {
+  constructor(size) {
+    super();
+    this.width = size;
+    this.height = size;
+    this.angle = Math.random() * 100;
+    this.vx = Math.sin(this.angle * Math.PI / 180);
+    this.vy = Math.cos(this.angle * Math.PI / 180);
+
+    this.shape = function(ctx) {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
+  }
+
+  act() {
+    if (this.world) {
+      let l = this.world.actors.length;
+      for (let i = 0; i < l; i++) {
+        if (this.world.checkCollision(this, this.world.actors[i]) && this.world.actors[i] instanceof Particle) {
+          this.world.removeObject(this);
+          return;
+        }
+      }
+
+      this.setLocation(this.x + this.vx, this.y + this.vy);
+    }
   }
 }
 
@@ -166,7 +76,7 @@ class Player extends Actor {
       ctx.restore();
       **/
       ctx.save();
-      ctx.translate(this.x, this.y);
+      ctx.translate(this.x + this.vx, this.y + this.vy);
       ctx.rotate(this.angle * Math.PI / 180);
       ctx.strokeStyle = '#ffffff';
       ctx.fillStyle = '#000000';
@@ -196,26 +106,89 @@ class Player extends Actor {
   }
 
   act() {
-    if (this.keys[65]) {
-      this.angle -= 10;
-    } else if (this.keys[68]) {
-      this.angle += 10;
+    //collision with Asteroid
+    if (this.world) {
+      let l = this.world.actors.length;
+      for (let i = 0; i < l; i++) {
+        if (this.world.checkCollision(this, this.world.actors[i]) && this.world.actors[i] instanceof Asteroid) {
+          this.world.removeObject(this);
+          return;
+        }
+      }
+
+      if (this.keys[65]) {
+        this.angle -= 10;
+      } else if (this.keys[68]) {
+        this.angle += 10;
+      }
+
+      if (this.keys[87]) {
+        this.vx += 0.25 * Math.sin(this.angle * Math.PI / 180);
+        this.vy -= 0.25 * Math.cos(this.angle * Math.PI / 180);
+        this.world.addObject(new Particle(this.angle), this.x, this.y);
+      } else if (this.keys[83]) {
+        //this.vx -= 0.25 * Math.sin(this.angle * Math.PI / 180);
+        //this.vy += 0.25 * Math.cos(this.angle * Math.PI / 180);
+      }
+      this.setLocation(this.x + this.vx, this.y + this.vy);
+
+
+      //Wrap
+      if (this.x < 0)
+        this.setLocation(this.world.canvas.width, this.y);
+      if (this.x > this.world.canvas.width)
+        this.setLocation(0, this.y);
+      if (this.y < 0)
+        this.setLocation(this.x, this.world.canvas.height);
+      if (this.y > this.world.canvas.height)
+        this.setLocation(this.x, 0);
+
+      //  if (this.keys[13])
+      //this.world.addObject(new Bullet(90 * Math.PI / 180), this.x, this.y);
     }
-
-    //this.vx = 5 * Math.cos(this.angle * Math.PI / 180);
-    //this.vy = 5 * Math.sin(this.angle * Math.PI / 180);
-
-    this.setLocation(this.x + this.vx, this.y + this.vy);
-
-    if (this.keys[13])
-      this.world.addObject(new Bullet(90 * Math.PI / 180), this.x, this.y);
   }
 }
 
-let myWorld = new World(document.getElementById("MyCanvas"));
-myWorld.setBackground(function(ctx) {
-  ctx.fillStyle = "black";
-  ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-});
+class MyWorld extends World {
+  constructor(element) {
+    super(element);
+    this.asteroidTimer = new Timer();
+    this.score = 0;
+    this.setBackground(function(ctx) {
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    });
+  }
+
+  removeObject(actor) {
+    super.removeObject(actor);
+    if (actor instanceof Asteroid) {
+      this.score++;
+      document.getElementById("score").innerHTML = `Score: ${this.score}`;
+    } else if (actor instanceof Player) {
+      document.getElementById("score").innerHTML = `Game Over! Refresh to restart`;
+    }
+  }
+
+  act() {
+    super.act();
+    if (this.asteroidTimer.millisecondsElapsed() > 1000) {
+      let rand = Math.floor(Math.random() * 4);
+      if (rand === 0)
+        this.addObject(new Asteroid(50), 0, Math.floor(Math.random() * this.canvas.height));
+      else if (rand === 1)
+        this.addObject(new Asteroid(50), this.canvas.width, Math.floor(Math.random() * this.canvas.height));
+      else if (rand === 2)
+        this.addObject(new Asteroid(50), Math.floor(Math.random() * this.canvas.width), 0);
+      else if (rand === 3)
+        this.addObject(new Asteroid(50), Math.floor(Math.random() * this.canvas.width), this.canvas.height);
+
+      this.asteroidTimer.mark();
+      console.log("Add asteroid")
+    }
+  }
+}
+
+let myWorld = new MyWorld(document.getElementById("MyCanvas"));
 myWorld.start();
 myWorld.addObject(new Player(), 100, 100);
