@@ -61,7 +61,7 @@ class Asteroid extends Actor {
     if (this.world) {
       let l = this.world.actors.length;
       for (let i = 0; i < l; i++) {
-        if (this.world.checkCollision(this, this.world.actors[i]) && this.world.actors[i] instanceof Bullet) {
+        if (this.world.checkCollision(this, this.world.actors[i]) && this.world.actors[i] instanceof Particle) {
           this.world.removeObject(this);
           return;
         }
