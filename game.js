@@ -1,5 +1,5 @@
 class Particle extends Actor {
-  constructor(angle) {
+  constructor(angle,color) {
     super();
     this.angle = angle;
     this.vx = -5 * Math.sin(this.angle * Math.PI / 180);
@@ -8,7 +8,7 @@ class Particle extends Actor {
     this.height = 5;
     this.lifetime = new Timer();
     this.shape = function(ctx) {
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = color;
       ctx.fillRect(this.x, this.y, this.width, this.height);
     }
 
@@ -26,6 +26,7 @@ class Bullet extends Actor {
     this.angle = angle;
     this.vx = 10 * Math.sin(this.angle * Math.PI / 180);
     this.vy = -10 * Math.cos(this.angle * Math.PI / 180);
+    //this.v = new Vector(10 * Math.sin(this.angle * Math.PI / 180), -10 * Math.cos(this.angle * Math.PI / 180));
     this.width = 5;
     this.height = 5;
     this.lifetime = new Timer();
@@ -77,6 +78,17 @@ class Asteroid extends Actor {
   }
 }
 
+// random color hexadecimal as string
+function getRandomColor() {
+  var letters = '0123456789ABCDEF';
+  var color = '#';
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  console.log(color);
+  return color;
+}
+
 class Player extends Actor {
   constructor() {
     super();
@@ -84,11 +96,11 @@ class Player extends Actor {
     this.height = 25;
     this.angle = 0;
 
+    this.MAX_V = 15;
     this.MAX_VX = 5;
     this.MAX_VY = 5;
-    this.vx = 0;
-    this.vy = 0;
-    this.a = 0.25;
+    this.v = new Vector(0,0);
+    this.a = new Vector(0,0);
 
     //shape
     this.color = "red";
@@ -103,7 +115,7 @@ class Player extends Actor {
       ctx.restore();
       **/
       ctx.save();
-      ctx.translate(this.x + this.vx, this.y + this.vy);
+      ctx.translate(this.x + this.v.x, this.y + this.v.y);
       ctx.rotate(this.angle * Math.PI / 180);
       ctx.strokeStyle = '#ffffff';
       ctx.fillStyle = '#000000';
@@ -132,7 +144,13 @@ class Player extends Actor {
     });
   }
 
+  // return acute angle relative from the y axis
+  get normalangle(){
+      return Math.abs((Math.atan(this.v.x/this.v.y)*180/Math.PI));
+  }
+
   act() {
+    console.log(this.v.x+" "+this.v.y);
     //collision with Asteroid
     if (this.world) {
       let l = this.world.actors.length;
@@ -150,15 +168,16 @@ class Player extends Actor {
       }
 
       if (this.keys[87]) {
-        this.vx += 0.25 * Math.sin(this.angle * Math.PI / 180);
-        this.vy -= 0.25 * Math.cos(this.angle * Math.PI / 180);
-        this.world.addObject(new Particle(this.angle), this.x, this.y);
+        this.v.add(new Vector(0.25 * Math.sin(this.angle * Math.PI / 180), -0.25 * Math.cos(this.angle * Math.PI / 180)));
+        /*if(this.v.magnitude()>this.MAX_V){
+          this.v.subtract(new Vector(0.25 * Math.sin(this.angle * Math.PI / 180), -0.25 * Math.cos(this.angle * Math.PI / 180)));
+        }*/
+        this.world.addObject(new Particle(this.angle, getRandomColor()), this.x, this.y);
       } else if (this.keys[83]) {
-        //this.vx -= 0.25 * Math.sin(this.angle * Math.PI / 180);
-        //this.vy += 0.25 * Math.cos(this.angle * Math.PI / 180);
+        //this.vx -= 0.25 * Math.sin(this.angle * Math.PI / 180); edit
+        //this.vy += 0.25 * Math.cos(this.angle * Math.PI / 180); edit
       }
-      this.setLocation(this.x + this.vx, this.y + this.vy);
-
+      this.setLocation(this.x + this.v.x, this.y + this.v.y);
 
       //Wrap
       if (this.x < 0)
@@ -173,6 +192,29 @@ class Player extends Actor {
       //if (this.keys[32])
       // /this.world.addObject(new Bullet(this.angle), this.x, this.y);
       //this.world.addObject(new Bullet(90 * Math.PI / 180), this.x, this.y);
+
+      //display velocity
+      document.getElementById("velocity").innerHTML="Velocity: "+this.v.magnitude().toFixed(2)+"m/s ";
+      let dir=Math.round(this.normalangle);
+      if(dir==0){
+        if(this.v.y>0)
+            document.getElementById("velocity").innerHTML+="S";
+        else
+            document.getElementById("velocity").innerHTML+="N";
+      }else if(dir==90){
+        if(this.v.x>0)
+            document.getElementById("velocity").innerHTML+="E";
+        else
+            document.getElementById("velocity").innerHTML+="W";
+      }
+      else if(this.v.x>0&&this.v.y<0) //Q1
+        document.getElementById("velocity").innerHTML+="N"+dir+"E";
+      else if(this.v.x<0&&this.v.y<0) //Q2
+        document.getElementById("velocity").innerHTML+="N"+dir+"W";
+      else if(this.v.x<0&&this.v.y>0) //Q3
+        document.getElementById("velocity").innerHTML+="S"+dir+"W";
+      else if(this.v.x>0&&this.v.y>0) //Q4
+        document.getElementById("velocity").innerHTML+="S"+dir+"E";
     }
   }
 }
