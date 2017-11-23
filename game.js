@@ -236,7 +236,7 @@ class MyWorld extends World {
       this.score++;
       document.getElementById("score").innerHTML = `Score: ${this.score}`;
     } else if (actor instanceof Player) {
-      document.getElementById("score").innerHTML = `Game Over! Refresh to restart`;
+      document.getElementById("score").innerHTML += ` Game Over! Refresh to restart`;
       this.stop();
     }
   }
