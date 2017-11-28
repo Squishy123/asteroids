@@ -38,11 +38,12 @@ class Asteroid extends CanvasActor {
   }
 
   init() {
+    super.init();
     this.setBounds({
       width: this.size,
       height: this.size
     });
-    super.init();
+    this.shape();
     this.angle = Math.random() * 100;
     this.vx = Math.sin(this.angle * Math.PI / 180);
     this.vy = Math.cos(this.angle * Math.PI / 180);
@@ -169,7 +170,7 @@ class Player extends CanvasActor {
       if (this.inputHandler.keys[87]) {
         this.vx += 0.25 * Math.sin(this.angle * Math.PI / 180);
         this.vy -= 0.25 * Math.cos(this.angle * Math.PI / 180);
-      //  this.stage.addObject(new Particle(this.angle), this.x, this.y);
+        //  this.stage.addObject(new Particle(this.angle), this.x, this.y);
       } else if (this.inputHandler.keys[83]) {
         //this.vx -= 0.25 * Math.sin(this.angle * Math.PI / 180);
         //this.vy += 0.25 * Math.cos(this.angle * Math.PI / 180);
@@ -256,4 +257,6 @@ class Mystage extends Stage {
 let mystage = new Mystage(document.getElementById("MyCanvas"));
 mystage.setBackground(mystage.element.getContext('2d'));
 mystage.start(60, 60);
-mystage.addObject(new Player(), 100, 100);
+let a = new Asteroid();
+mystage.addObject(a, 100, 100);
+a.init();
