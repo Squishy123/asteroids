@@ -1,19 +1,7 @@
 class CanvasActor extends Actor {
   constructor() {
     super();
-    this.bindElement(null);
     this.shape = null;
-  }
-
-  setBounds(bounds) {
-    if (bounds.x)
-      this.x = bounds.x;
-    if (bounds.y)
-      this.y = bounds.y;
-    if (bounds.width)
-      this.width = bounds.width;
-    if (bounds.height)
-      this.height = bounds.height;
   }
 
   setShape(shape) {
