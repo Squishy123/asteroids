@@ -42,8 +42,6 @@ class Asteroid extends CanvasActor {
   }
 }
 
-<<<<<<< HEAD
-
 class Particle extends CanvasActor {
   constructor(angle) {
     super();
@@ -71,8 +69,6 @@ class Particle extends CanvasActor {
   }
 }
 
-=======
->>>>>>> parent of 9e9c80a... Added particles TODO fix
 class Player extends CanvasActor {
   constructor() {
     super();
@@ -150,8 +146,6 @@ class Player extends CanvasActor {
         x: this.x + this.vx,
         y: this.y + this.vy
       });
-
-      console.log(this.getBounds())
       //Wrap
       if (this.x < 0)
         this.setBounds({
@@ -160,7 +154,7 @@ class Player extends CanvasActor {
         });
       if (this.x > this.stage.getBounds().width)
         this.setBounds({
-          x: 0,
+          x: "0",
           y: this.y
         });
       if (this.y < 0)
@@ -171,7 +165,7 @@ class Player extends CanvasActor {
       if (this.y > this.stage.getBounds().height)
         this.setBounds({
           x: this.x,
-          y: 0
+          y: "0"
         });
 
       //if (this.inputHandler.keys[32])
