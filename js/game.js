@@ -75,7 +75,7 @@ class Particle extends CanvasActor {
   }
 
   update() {
-    if (this.lifetime.millisecondsElapsed() > 1000) this.stage.removeObject(this);
+    //if (this.lifetime.millisecondsElapsed() > 1000) this.stage.removeObject(this);
     this.setBounds({
       x: this.x + this.vx,
       y: this.y + this.vy
@@ -166,7 +166,7 @@ class Player extends CanvasActor {
         y: this.y + this.vy
       });
 
-
+      console.log(this.getBounds())
       //Wrap
       if (this.x < 0)
         this.setBounds({
@@ -175,7 +175,7 @@ class Player extends CanvasActor {
         });
       if (this.x > this.stage.getBounds().width)
         this.setBounds({
-          x: "0",
+          x: 0,
           y: this.y
         });
       if (this.y < 0)
@@ -186,7 +186,7 @@ class Player extends CanvasActor {
       if (this.y > this.stage.getBounds().height)
         this.setBounds({
           x: this.x,
-          y: "0"
+          y: 0
         });
 
       //if (this.inputHandler.keys[32])

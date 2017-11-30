@@ -210,12 +210,13 @@ class SilkObject {
    * recalculate the new bounds
    **/
   bindElement(element) {
-    this.element = element;
-    //update initial bounds
-    let bounds = element.getBoundingClientRect();
-    this.setBounds(bounds);
+    if (element != null) {
+      this.element = element;
+      //update initial bounds
+      let bounds = element.getBoundingClientRect();
+      this.setBounds(bounds);
+    }
   }
-
   /**
    * Add or set style properties to the element
    **/
@@ -390,7 +391,7 @@ class Stage extends SilkObject {
   update() {
     if (!this.running) return;
     window.requestAnimationFrame(this.update.bind(this));
-    if(this.fpsTimer.millisecondsElapsed() >= 1000) {
+    if (this.fpsTimer.millisecondsElapsed() >= 1000) {
       this.fpsTimer.mark();
       console.log(this.fps);
       this.fps = 0;
