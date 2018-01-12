@@ -3,12 +3,20 @@
 
 <head>
   <title>Asteroid</title>
+  <style>
+    #stage {
+      width: 500px;
+      height: 500px;
+
+      background-color: black;
+    }
+  </style>
 </head>
 
 <body>
   <h1 id="score">Score: 0</h1>
   <p>WASD to move</p>
-  <canvas id="MyCanvas" width="500px" height="500px"></canvas>
-  <script type="text/javascript" src="webfoot.js"></script>
-  <script type="text/javascript" src="game.js"></script>
+  <div id="stage"></div>
+  <script type="text/javascript" src="js/silk.min.js"></script>
+  <script type="text/javascript" src="js/game.js"></script>
 </body>
