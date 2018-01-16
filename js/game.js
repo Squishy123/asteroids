@@ -1,6 +1,10 @@
 class GameActor extends Actor {
   constructor(element) {
     super(element);
+    this.preload();
+    this.velocity = new Vector(0, 0);
+    this.acceleration = new Vector(0, 0);
+    this.MAX_VELOCITY = 1;
   }
 
   preload() {
@@ -9,6 +13,26 @@ class GameActor extends Actor {
     });
   }
 
+  addForce(v) {
+      let mod = new Vector(v.x, v.y);
+      if(Math.abs(v.x) > this.MAX_VELOCITY) mod.x = 0;
+      if(Math.abs(v.y) > this.MAX_VELOCITY) mod.y = 0;
+
+      this.acceleration.add(v);
+      this.calculatePosition();
+  }
+
+  calculatePosition() {
+    let mod = new Vector(this.acceleration.x, this.acceleration.y);
+    if(Math.abs(this.velocity.x) > this.MAX_VELOCITY) mod.x = 0;
+    if(Math.abs(this.velocity.y) > this.MAX_VELOCITY) mod.y = 0;
+    this.velocity.add(mod);
+
+    this.setBounds({
+      x: this.x + this.velocity.x,
+      y: this.y + this.velocity.y
+    });
+  }
   //Added rotation to bounds
   setBounds(bounds) {
     super.setBounds(bounds);
@@ -29,21 +53,38 @@ class Player extends GameActor {
   preload() {
     //add shape
     this.styleElement({
-      'width': 0,
-      'height': 0,
-      'border-bottom': '40px solid #FFF',
-      'border-left': '20px solid transparent',
-      'border-right': '20px solid transparent'
+      'position': 'absolute',
+      'background-color': '#FFF'
     });
 
-    this.added = 0;
+    this.setBounds({
+      width: 50,
+      height: 50
+    });
+
+    this.input = new InputHandler();
+    this.input.targetEvents(document, {
+      keydown: true,
+      keyup: true
+    });
   }
 
   update() {
-    this.added++;
-    this.setBounds({
-      rotation: this.added
-    })
+    console.log(this.input.keys)
+    //a
+    if (this.input.keys[65]) {
+      this.addForce(new Vector(-0.001, 0));
+    } else if (this.input.keys[68]) {
+      this.addForce(new Vector(0.001, 0));
+    }
+    //s
+    if (this.input.keys[83]) {
+      this.addForce(new Vector(0, 0.001));
+    } else if (this.input.keys[87]) {
+      this.addForce(new Vector(0, -0.001));
+    }
+
+    this.calculatePosition();
   }
 }
 
