@@ -10,11 +10,23 @@ class Asteroid extends CanvasActor {
       width: this.size,
       height: this.size
     });
+    
+    let rand = Math.floor(Math.random() * 4);
+    if (rand === 0)
+      this.setBounds({ x: 0, y: Math.floor(Math.random() * 500 )});
+    else if (rand === 1)
+      this.setBounds({ x: 500, y: Math.floor(Math.random() * 500) });
+    else if (rand === 2)
+      this.setBounds({ x: Math.floor(Math.random() * 500), y: 0 });
+    else if (rand === 3)
+      this.setBounds({ x: Math.floor(Math.random() * 500), y: 500});
+
+      console.log(this.x, this.y)
 
     //set shape
     this.setShape((ctx) => {
       ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, this.getBounds().width, this.getBounds().height);
+      ctx.fillRect(this.getBounds().x, this.getBounds().y, this.getBounds().width, this.getBounds().height);
     });
 
     this.angle = Math.random() * 100;
@@ -24,7 +36,7 @@ class Asteroid extends CanvasActor {
 
   update() {
     super.update();
-    if (this.world) {
+    /*if (this.world) {
       let l = this.world.actors.length;
       for (let i = 0; i < l; i++) {
         if (this.world.checkCollision(this, this.world.actors[i]) && this.world.actors[i] instanceof Particle) {
@@ -35,11 +47,10 @@ class Asteroid extends CanvasActor {
           this.world.removeObject(this);
           return;
         }
-      }
+      }*/
 
-      this.setLocation(this.x + this.vx, this.y + this.vy);
-    }
-  }
+    this.setBounds({ x: this.x + this.vx, y: this.y + this.vy });
+  }//
 }
 
 class Particle extends CanvasActor {
@@ -50,10 +61,11 @@ class Particle extends CanvasActor {
     this.vy = 5 * Math.cos(this.angle * Math.PI / 180);
     this.setBounds({
       width: 5,
-      height: 5
+      height: 5,
+      x:0, y:0
     });
     this.lifetime = new Timer();
-    this.shape = function(ctx) {
+    this.shape = function (ctx) {
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(this.getBounds().x, this.getBounds().y, this.getBounds().width, this.getBounds().height);
     }
@@ -81,7 +93,7 @@ class Player extends CanvasActor {
       height: 25
     });
 
-    this.setShape(function(ctx) {
+    this.setShape(function (ctx) {
       ctx.save();
       ctx.translate(this.x + this.vx, this.y + this.vy);
       ctx.rotate(this.angle * Math.PI / 180);
@@ -119,14 +131,14 @@ class Player extends CanvasActor {
   update() {
     super.update();
     //collision with Asteroid
-    if (this.stage) {
+    if (this.stage) {/*
       let l = this.stage.actors.length;
-      for (let i = 0; i < l; i++) {
+      for (let i = 0; i < l; i++) { 
         if (this.stage.checkCollision(this, this.stage.actors[i]) && this.stage.actors[i] instanceof Asteroid) {
           this.stage.removeObject(this);
           return;
         }
-      }
+      }*/
 
       if (this.inputHandler.keys[65]) {
         this.angle -= 10;
@@ -137,7 +149,7 @@ class Player extends CanvasActor {
       if (this.inputHandler.keys[87]) {
         this.vx += 0.25 * Math.sin(this.angle * Math.PI / 180);
         this.vy -= 0.25 * Math.cos(this.angle * Math.PI / 180);
-        //  this.stage.addObject(new Particle(this.angle), this.x, this.y);
+        this.stage.addObject(new Particle(this.angle), this.x, this.y);
       } else if (this.inputHandler.keys[83]) {
         //this.vx -= 0.25 * Math.sin(this.angle * Math.PI / 180);
         //this.vy += 0.25 * Math.cos(this.angle * Math.PI / 180);
@@ -180,7 +192,7 @@ class AsteroidWorld extends CanvasStage {
     super(canvas);
     this.asteroidTimer = new Timer();
     this.score = 0;
-    this.setBackground(function(ctx) {
+    this.setBackground(function (ctx) {
       ctx.fillStyle = "black";
       ctx.fillRect(0, 0, this.getBounds().width, this.getBounds().height);
     });
@@ -201,16 +213,7 @@ class AsteroidWorld extends CanvasStage {
   update() {
     super.update();
     if (this.asteroidTimer.millisecondsElapsed() > 1000) {
-      let rand = Math.floor(Math.random() * 4);
-      if (rand === 0)
-        this.addObject(new Asteroid(50), 0, Math.floor(Math.random() * this.getBounds().height));
-      else if (rand === 1)
-        this.addObject(new Asteroid(50), this.getBounds().width, Math.floor(Math.random() * this.getBounds().height));
-      else if (rand === 2)
-        this.addObject(new Asteroid(50), Math.floor(Math.random() * this.getBounds().width), 0);
-      else if (rand === 3)
-        this.addObject(new Asteroid(50), Math.floor(Math.random() * this.getBounds().width), this.getBounds().height);
-
+      this.addObject(new Asteroid(50))
       this.asteroidTimer.mark();
       console.log("Add asteroid")
     }
@@ -220,5 +223,5 @@ class AsteroidWorld extends CanvasStage {
 let myWorld = new AsteroidWorld(document.getElementById("myCanvas"));
 myWorld.start();
 let player = new Player();
-player.setBounds({x: 300, y: 300});
+player.setBounds({ x: 300, y: 300 });
 myWorld.addObject(player);
